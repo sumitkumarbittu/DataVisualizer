@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Step 4: Visualization Result</title>
+    <title>Step 5: Data Preprocessing Code</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -41,19 +41,17 @@
             background-color: #28a745;
             color: white;
         }
-        .result-section {
-            margin-bottom: 30px;
+        .step.current {
+            background-color: #007bff;
+            color: white;
         }
-        .image-container {
-            text-align: center;
-            margin: 30px 0;
-        }
-        .image-container img {
-            max-width: 100%;
-            height: auto;
-            border: 2px solid #ddd;
+        .success-message {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 15px;
             border-radius: 5px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            text-align: center;
         }
         .code-section {
             background-color: #f8f9fa;
@@ -73,14 +71,35 @@
             font-family: 'Courier New', monospace;
             white-space: pre-wrap;
             overflow-x: auto;
+            position: relative;
         }
-        .success-message {
-            background-color: #d4edda;
-            color: #155724;
+        .copy-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .copy-button:hover {
+            background-color: #0056b3;
+        }
+        .copy-button.copied {
+            background-color: #28a745;
+        }
+        .data-info {
+            background-color: #e9ecef;
             padding: 15px;
             border-radius: 5px;
             margin-bottom: 20px;
-            text-align: center;
+        }
+        .data-info h3 {
+            margin-top: 0;
+            color: #333;
         }
         .action-buttons {
             text-align: center;
@@ -121,41 +140,67 @@
 </head>
 <body>
     <div class="container">
-        <h1>CSV Data Visualizer - Step 4</h1>
+        <h1>CSV Data Visualizer - Step 5</h1>
 
         <div class="step-navigation">
             <div class="step completed">1. Upload CSV</div>
             <div class="step completed">2. View Data Table</div>
             <div class="step completed">3. Generate Code</div>
             <div class="step completed">4. View Visualization</div>
-            <div class="step">5. Preprocessing Code</div>
+            <div class="step current">5. Preprocessing Code</div>
         </div>
 
         <div class="success-message">
-            <h3>🎉 Visualization Complete!</h3>
-            <p>Your AI-generated matplotlib visualization has been successfully created and is ready to view.</p>
+            <h3>🛠️ Preprocessing Code Generated!</h3>
+            <p>Your AI-generated data preprocessing code is ready. You can copy and use it directly in your own projects.</p>
         </div>
 
-        <div class="result-section">
-            <h2>Generated Visualization</h2>
-            <div class="image-container">
-                <img src="{{ url_for('static', filename='plots/' + image_file) }}" alt="Generated visualization">
-            </div>
+        <div class="data-info">
+            <h3>Dataset Information</h3>
+            <p><strong>Columns:</strong> {{ data_info.columns|join(', ') }}</p>
+            <p><strong>Shape:</strong> {{ data_info.shape[0] }} rows × {{ data_info.shape[1] }} columns</p>
+            <p><strong>Data Types:</strong> {{ data_info.dtypes }}</p>
         </div>
 
-        <div class="result-section">
-            <h2>Code Used for Visualization</h2>
-            <div class="code-section">
-                <div class="code-block">{{ code }}</div>
+        <div class="code-section">
+            <h3>Generated Preprocessing Code</h3>
+            <p>This code demonstrates common preprocessing techniques for your dataset. Click the copy button to copy the code.</p>
+            <div class="code-block" id="codeBlock">
+                {{ code }}
+                <button class="copy-button" onclick="copyToClipboard()">Copy Code</button>
             </div>
         </div>
 
         <div class="action-buttons">
-            <form action="/step5" method="post" style="display: inline;">
-                <button type="submit" class="btn btn-primary">Get Preprocessing Code →</button>
-            </form>
-            <a href="{{ url_for('index') }}" class="btn btn-secondary">Upload New CSV</a>
+            <a href="{{ url_for('index') }}" class="btn btn-primary">Upload New CSV</a>
+            <button onclick="copyToClipboard()" class="btn btn-success">Copy Code Again</button>
         </div>
     </div>
+
+    <script>
+        function copyToClipboard() {
+            const codeBlock = document.getElementById('codeBlock');
+            const textArea = document.createElement('textarea');
+            textArea.value = `{{ code }}`;
+            document.body.appendChild(textArea);
+            textArea.select();
+
+            try {
+                document.execCommand('copy');
+                const copyButton = document.querySelector('.copy-button');
+                copyButton.textContent = 'Copied!';
+                copyButton.classList.add('copied');
+
+                setTimeout(() => {
+                    copyButton.textContent = 'Copy Code';
+                    copyButton.classList.remove('copied');
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy text: ', err);
+            }
+
+            document.body.removeChild(textArea);
+        }
+    </script>
 </body>
 </html>

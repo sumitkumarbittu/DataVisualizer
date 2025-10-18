@@ -138,6 +138,55 @@ def get_matplotlib_code_from_gemini(data_info):
     except Exception as e:
         raise ValueError(f"Error getting code from Gemini API: {str(e)}")
 
+def get_preprocessing_code_from_gemini(data_info):
+    """Get preprocessing code from Gemini API based on dataframe info"""
+    try:
+        # Create model instance (API already configured at top of file)
+        model = genai.GenerativeModel('gemini-2.5-flash')
+
+        prompt = f"""
+        I have a dataset with the following information:
+        - Columns: {data_info['columns']}
+        - Sample data: {data_info['head_values']}
+        - Data shape: {data_info['shape']}
+        - Data types: {data_info['dtypes']}
+
+        Please generate a Python preprocessing code snippet that demonstrates common data preprocessing techniques for this dataset.
+        The code should:
+        1. Import necessary libraries (pandas as pd, numpy as np, sklearn preprocessing tools if needed)
+        2. Create a sample dataframe with the same structure and column names
+        3. Include common preprocessing steps like:
+           - Handling missing values
+           - Data type conversions if needed
+           - Encoding categorical variables (if any)
+           - Scaling/normalization (if applicable)
+           - Feature engineering suggestions
+        4. Be well-commented and educational
+        5. Show before/after results with print statements
+
+        Important: The code should work in an isolated environment where only basic Python libraries are available.
+        Create sample data that represents the same data types and structure as the original dataset.
+        Include error handling where appropriate.
+
+        Provide only the Python code without any markdown formatting or explanations.
+        """
+
+        response = model.generate_content(prompt)
+
+        # Ensure we get a proper response
+        if not hasattr(response, 'text') or not response.text:
+            raise ValueError("Invalid response from Gemini API")
+
+        result = response.text.strip()
+
+        # Ensure result is a string
+        if not isinstance(result, str):
+            result = str(result)
+
+        return result
+    except Exception as e:
+        raise ValueError(f"Error getting preprocessing code from Gemini API: {str(e)}")
+
 def execute_matplotlib_code_from_file(snippet_file, data_info=None):
     """
     Read matplotlib code from file and execute it in a headless environment (macOS-safe).
@@ -179,6 +228,7 @@ def execute_matplotlib_code(code_str, data_info=None):
             'float': float,
             'list': list,
             'dict': dict,
+            'round': round,
             '__import__': __import__
         }
     }
@@ -340,6 +390,32 @@ def step4_visualization():
 
     except Exception as e:
         flash(f'Error creating visualization: {e}')
+        return redirect(url_for('index'))
+
+@app.route('/step5', methods=['POST'])
+def step5_preprocessing():
+    """Generate preprocessing code snippets (Step 5)"""
+    try:
+        # Validate session
+        if 'data_info' not in session:
+            flash('No data available. Please upload a CSV file first.')
+            return redirect(url_for('index'))
+
+        data_info = session['data_info']
+
+        # Get preprocessing code from Gemini
+        raw_code = get_preprocessing_code_from_gemini(data_info)
+        cleaned_code = clean_matplotlib_code(raw_code)  # Reuse existing cleaning function
+
+        # Store code in session
+        session['preprocessing_code'] = cleaned_code
+
+        # Return preprocessing code view
+        return render_template('step5_preprocessing.html',
+                             data_info=data_info,
+                             code=cleaned_code)
+    except Exception as e:
+        flash(f'Error generating preprocessing code: {str(e)}')
         return redirect(url_for('index'))
 
 @app.route('/images/<filename>')
