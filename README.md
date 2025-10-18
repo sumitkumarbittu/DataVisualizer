@@ -374,16 +374,6 @@ pip install -e .
 
 ---
 
-## 📜 **Version History**
-
-| Version | Date | Description |
-|---------|------|-------------|
-| **v2.0** | October 2024 | Added 5th step with preprocessing code generation |
-| **v1.5** | September 2024 | Enhanced UI and mobile responsiveness |
-| **v1.0** | August 2024 | Initial 4-step visualization workflow |
-
----
-
 ## 📄 **License**
 
 **MIT License** - See [LICENSE](LICENSE) file for details.
