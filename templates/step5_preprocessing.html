@@ -3,204 +3,536 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Step 5: Data Preprocessing Code</title>
+    <title>Step 5: AI-Powered Preprocessing Code</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            max-width: 1200px;
-            margin: 0 auto;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
             padding: 20px;
-            background-color: #f5f5f5;
         }
+
         .container {
-            background-color: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
         }
-        h1 {
-            color: #333;
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 40px;
             text-align: center;
-            margin-bottom: 30px;
         }
+
+        .header h1 {
+            font-size: 2.5em;
+            font-weight: 300;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header .subtitle {
+            font-size: 1.1em;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
         .step-navigation {
             display: flex;
-            justify-content: space-between;
-            margin-bottom: 30px;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.1);
             padding: 20px;
-            background-color: #e9ecef;
-            border-radius: 8px;
+            gap: 10px;
+            flex-wrap: wrap;
         }
+
         .step {
-            text-align: center;
-            padding: 10px 20px;
-            border-radius: 5px;
-            font-weight: bold;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
         }
+
         .step.completed {
-            background-color: #28a745;
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
             color: white;
+            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
         }
+
         .step.current {
-            background-color: #007bff;
+            background: linear-gradient(135deg, #3498db, #2980b9);
             color: white;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+            transform: scale(1.05);
         }
+
+        .content {
+            padding: 40px;
+        }
+
         .success-message {
-            background-color: #d4edda;
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
             color: #155724;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
             text-align: center;
+            border: 1px solid #c3e6cb;
+            box-shadow: 0 4px 15px rgba(212, 237, 218, 0.3);
         }
-        .code-section {
-            background-color: #f8f9fa;
-            padding: 20px;
-            border-radius: 5px;
-            margin: 20px 0;
+
+        .success-message h3 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            color: #155724;
         }
-        .code-section h3 {
-            margin-top: 0;
-            color: #333;
+
+        .success-message p {
+            font-size: 1.1em;
+            opacity: 0.9;
         }
-        .code-block {
-            background-color: #2d3748;
-            color: #e2e8f0;
-            padding: 15px;
-            border-radius: 5px;
-            font-family: 'Courier New', monospace;
-            white-space: pre-wrap;
-            overflow-x: auto;
+
+        .data-info {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 40px;
+            border-left: 5px solid #007bff;
+        }
+
+        .data-info h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.4em;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-card h4 {
+            color: #7f8c8d;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-card p {
+            color: #2c3e50;
+            font-size: 2em;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .snippets-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .snippet-box {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .snippet-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+
+        .snippet-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px 25px;
+            font-weight: 600;
+            font-size: 1.2em;
             position: relative;
         }
-        .copy-button {
+
+        .snippet-header::after {
+            content: '';
             position: absolute;
-            top: 10px;
-            right: 10px;
-            background-color: #007bff;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #667eea, #764ba2, #667eea);
+        }
+
+        .snippet-content {
+            padding: 25px;
+        }
+
+        .snippet-description {
+            background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            font-size: 0.95em;
+            line-height: 1.6;
+            color: #856404;
+        }
+
+        .code-container {
+            background: #2d3748;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .code-header {
+            background: #1a202c;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .code-title {
+            color: #e2e8f0;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .copy-button {
+            background: linear-gradient(135deg, #48bb78, #38a169);
             color: white;
             border: none;
-            padding: 5px 10px;
-            border-radius: 3px;
+            padding: 8px 16px;
+            border-radius: 6px;
             cursor: pointer;
-            font-size: 12px;
+            font-size: 0.85em;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
+
         .copy-button:hover {
-            background-color: #0056b3;
+            background: linear-gradient(135deg, #38a169, #2f855a);
+            transform: translateY(-1px);
         }
+
         .copy-button.copied {
-            background-color: #28a745;
+            background: linear-gradient(135deg, #ed8936, #dd6b20);
         }
-        .data-info {
-            background-color: #e9ecef;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
+
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            font-family: 'Fira Code', 'Monaco', 'Consolas', monospace;
+            font-size: 0.9em;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            overflow-x: auto;
+            max-height: 400px;
+            overflow-y: auto;
         }
-        .data-info h3 {
-            margin-top: 0;
-            color: #333;
+
+        .code-block::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
         }
+
+        .code-block::-webkit-scrollbar-track {
+            background: #1a202c;
+        }
+
+        .code-block::-webkit-scrollbar-thumb {
+            background: #4a5568;
+            border-radius: 4px;
+        }
+
         .action-buttons {
             text-align: center;
-            margin-top: 30px;
+            margin-top: 50px;
+            padding: 30px;
+            background: rgba(248, 249, 250, 0.8);
+            border-radius: 15px;
         }
+
         .btn {
-            padding: 12px 30px;
-            margin: 0 10px;
+            padding: 15px 30px;
+            margin: 0 15px;
             border: none;
-            border-radius: 5px;
+            border-radius: 10px;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 1em;
+            font-weight: 600;
             text-decoration: none;
             display: inline-block;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
         .btn-primary {
-            background-color: #007bff;
+            background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
         }
+
         .btn-primary:hover {
-            background-color: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
         }
+
         .btn-secondary {
-            background-color: #6c757d;
+            background: linear-gradient(135deg, #f093fb, #f5576c);
             color: white;
+            box-shadow: 0 4px 15px rgba(240, 147, 251, 0.3);
         }
+
         .btn-secondary:hover {
-            background-color: #545b62;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(240, 147, 251, 0.4);
         }
-        .btn-success {
-            background-color: #28a745;
-            color: white;
-        }
-        .btn-success:hover {
-            background-color: #1e7e34;
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+
+            .header {
+                padding: 30px 20px;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .step-navigation {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .snippets-container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .stats {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>CSV Data Visualizer - Step 5</h1>
+        <div class="header">
+            <h1>🛠️ AI-Powered Data Preprocessing</h1>
+            <p class="subtitle">Intelligent preprocessing code snippets tailored for your dataset</p>
 
-        <div class="step-navigation">
-            <div class="step completed">1. Upload CSV</div>
-            <div class="step completed">2. View Data Table</div>
-            <div class="step completed">3. Generate Code</div>
-            <div class="step completed">4. View Visualization</div>
-            <div class="step current">5. Preprocessing Code</div>
-        </div>
-
-        <div class="success-message">
-            <h3>🛠️ Preprocessing Code Generated!</h3>
-            <p>Your AI-generated data preprocessing code is ready. You can copy and use it directly in your own projects.</p>
-        </div>
-
-        <div class="data-info">
-            <h3>Dataset Information</h3>
-            <p><strong>Columns:</strong> {{ data_info.columns|join(', ') }}</p>
-            <p><strong>Shape:</strong> {{ data_info.shape[0] }} rows × {{ data_info.shape[1] }} columns</p>
-            <p><strong>Data Types:</strong> {{ data_info.dtypes }}</p>
-        </div>
-
-        <div class="code-section">
-            <h3>Generated Preprocessing Code</h3>
-            <p>This code demonstrates common preprocessing techniques for your dataset. Click the copy button to copy the code.</p>
-            <div class="code-block" id="codeBlock">
-                {{ code }}
-                <button class="copy-button" onclick="copyToClipboard()">Copy Code</button>
+            <div class="step-navigation">
+                <div class="step completed">1. Upload CSV</div>
+                <div class="step completed">2. View Data Table</div>
+                <div class="step completed">3. Generate Code</div>
+                <div class="step completed">4. View Visualization</div>
+                <div class="step current">5. Preprocessing Code</div>
             </div>
         </div>
 
-        <div class="action-buttons">
-            <a href="{{ url_for('index') }}" class="btn btn-primary">Upload New CSV</a>
-            <button onclick="copyToClipboard()" class="btn btn-success">Copy Code Again</button>
+        <div class="content">
+            <div class="success-message">
+                <h3>🎯 Multiple Preprocessing Approaches Generated!</h3>
+                <p>AI has analyzed your dataset and created personalized preprocessing code snippets. Each approach focuses on different aspects of data preparation, perfectly tailored to your data structure.</p>
+            </div>
+
+            <div class="data-info">
+                <h3>📊 Dataset Analysis Summary</h3>
+                <div class="stats">
+                    <div class="stat-card">
+                        <h4>Total Columns</h4>
+                        <p>{{ data_info.columns|length }}</p>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Data Types</h4>
+                        <p>{{ data_info.dtypes|length }} unique</p>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Preprocessing Snippets</h4>
+                        <p>{{ snippets|length }} generated</p>
+                    </div>
+                    <div class="stat-card">
+                        <h4>AI Model</h4>
+                        <p>Gemini 2.5 Flash</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="snippets-container">
+                {% for step_name, code in snippets.items() %}
+                <div class="snippet-box">
+                    <div class="snippet-header">
+                        {{ step_name.replace('_', ' ').title() }}
+                    </div>
+                    <div class="snippet-content">
+                        <div class="snippet-description">
+                            {% if step_name == 'missing_value_numeric' %}
+                                🔢 Learn different strategies for handling missing values in numeric columns using mean, median, and interpolation methods.
+                            {% elif step_name == 'missing_value_categorical' %}
+                                📝 Discover techniques for handling missing values in categorical data using mode imputation and 'Unknown' categories.
+                            {% elif step_name == 'categorical_encoding' %}
+                                🏷️ Explore various encoding methods for categorical variables including label encoding, one-hot encoding, and target encoding.
+                            {% elif step_name == 'numeric_scaling' %}
+                                📏 Learn about different scaling techniques to normalize numeric features for machine learning algorithms.
+                            {% elif step_name == 'outlier_detection' %}
+                                🎯 Understand methods to detect and handle outliers using statistical and machine learning approaches.
+                            {% elif step_name == 'data_cleaning' %}
+                                🧹 Master essential data cleaning operations including duplicate removal and data type corrections.
+                            {% elif step_name == 'feature_engineering' %}
+                                ⚡ Discover techniques to create new meaningful features from existing data to improve model performance.
+                            {% elif step_name == 'comprehensive_missing_values' %}
+                                🔍 Complete pipeline for handling missing values across all data types with visualization and analysis.
+                            {% endif %}
+                        </div>
+
+                        <div class="code-container">
+                            <div class="code-header">
+                                <span class="code-title">Python Code</span>
+                                <button class="copy-button" onclick="copyToClipboard('codeBlock{{ loop.index }}', '{{ step_name }}')">
+                                    📋 Copy Code
+                                </button>
+                            </div>
+                            <div class="code-block" id="codeBlock{{ loop.index }}">
+                                {{ code }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="action-buttons">
+                <a href="{{ url_for('index') }}" class="btn btn-primary">⬅️ Upload New CSV</a>
+                <button onclick="copyAllSnippets()" class="btn btn-secondary">📋 Copy All Snippets</button>
+            </div>
         </div>
     </div>
 
     <script>
-        function copyToClipboard() {
-            const codeBlock = document.getElementById('codeBlock');
+        function copyToClipboard(elementId, stepName) {
+            const codeBlock = document.getElementById(elementId);
             const textArea = document.createElement('textarea');
-            textArea.value = `{{ code }}`;
+            textArea.value = codeBlock.textContent.trim();
             document.body.appendChild(textArea);
             textArea.select();
 
             try {
                 document.execCommand('copy');
-                const copyButton = document.querySelector('.copy-button');
-                copyButton.textContent = 'Copied!';
+                const copyButton = codeBlock.parentElement.querySelector('.copy-button');
+                const originalText = copyButton.innerHTML;
+                copyButton.innerHTML = '✅ Copied!';
                 copyButton.classList.add('copied');
 
                 setTimeout(() => {
-                    copyButton.textContent = 'Copy Code';
+                    copyButton.innerHTML = originalText;
                     copyButton.classList.remove('copied');
                 }, 2000);
             } catch (err) {
                 console.error('Failed to copy text: ', err);
+                alert('Failed to copy code. Please copy manually.');
             }
 
             document.body.removeChild(textArea);
         }
+
+        function copyAllSnippets() {
+            const codeBlocks = document.querySelectorAll('.code-block');
+            let allCode = '# AI-Generated Preprocessing Code Snippets\n\n';
+
+            codeBlocks.forEach((block, index) => {
+                const stepName = block.id.replace('codeBlock', '');
+                const code = block.textContent.trim();
+                allCode += `## ${stepName.replace('_', ' ').toUpperCase()}\n\`\`\`python\n${code}\n\`\`\`\n\n`;
+            });
+
+            const textArea = document.createElement('textarea');
+            textArea.value = allCode;
+            document.body.appendChild(textArea);
+            textArea.select();
+
+            try {
+                document.execCommand('copy');
+                alert('✨ All preprocessing code snippets copied to clipboard!');
+            } catch (err) {
+                console.error('Failed to copy text: ', err);
+                alert('❌ Failed to copy all snippets. Please copy them individually.');
+            }
+
+            document.body.removeChild(textArea);
+        }
+
+        // Add smooth scrolling for better UX
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
     </script>
 </body>
 </html>

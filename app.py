@@ -139,51 +139,190 @@ def get_matplotlib_code_from_gemini(data_info):
         raise ValueError(f"Error getting code from Gemini API: {str(e)}")
 
 def get_preprocessing_code_from_gemini(data_info):
-    """Get preprocessing code from Gemini API based on dataframe info"""
+    """Get multiple preprocessing code snippets from Gemini API based on dataframe info"""
     try:
         # Create model instance (API already configured at top of file)
         model = genai.GenerativeModel('gemini-2.5-flash')
 
-        prompt = f"""
-        I have a dataset with the following information:
-        - Columns: {data_info['columns']}
-        - Sample data: {data_info['head_values']}
-        - Data shape: {data_info['shape']}
-        - Data types: {data_info['dtypes']}
+        # Analyze data types to determine which preprocessing steps are relevant
+        dtypes = data_info['dtypes']
+        columns = data_info['columns']
 
-        Please generate a Python preprocessing code snippet that demonstrates common data preprocessing techniques for this dataset.
-        The code should:
-        1. Import necessary libraries (pandas as pd, numpy as np, sklearn preprocessing tools if needed)
-        2. Create a sample dataframe with the same structure and column names
-        3. Include common preprocessing steps like:
-           - Handling missing values
-           - Data type conversions if needed
-           - Encoding categorical variables (if any)
-           - Scaling/normalization (if applicable)
-           - Feature engineering suggestions
-        4. Be well-commented and educational
-        5. Show before/after results with print statements
+        # Determine which preprocessing steps would be useful based on data types
+        preprocessing_steps = []
 
-        Important: The code should work in an isolated environment where only basic Python libraries are available.
-        Create sample data that represents the same data types and structure as the original dataset.
-        Include error handling where appropriate.
+        # Check for numeric columns (might need scaling, outlier detection)
+        numeric_cols = [col for col, dtype in dtypes.items() if dtype in ['int64', 'float64']]
+        if numeric_cols:
+            preprocessing_steps.extend([
+                "numeric_scaling",
+                "outlier_detection",
+                "missing_value_numeric"
+            ])
 
-        Provide only the Python code without any markdown formatting or explanations.
-        """
+        # Check for categorical columns (might need encoding)
+        categorical_cols = [col for col, dtype in dtypes.items() if dtype == 'object']
+        if categorical_cols:
+            preprocessing_steps.extend([
+                "categorical_encoding",
+                "missing_value_categorical"
+            ])
 
-        response = model.generate_content(prompt)
+        # Check for missing values in sample data
+        sample_data = data_info['head_values']
+        has_missing = any(None in row.values() or '' in str(v) for row in sample_data for v in row.values())
+        if has_missing:
+            preprocessing_steps.append("comprehensive_missing_values")
 
-        # Ensure we get a proper response
-        if not hasattr(response, 'text') or not response.text:
-            raise ValueError("Invalid response from Gemini API")
+        # Always include some general steps
+        preprocessing_steps.extend([
+            "data_cleaning",
+            "feature_engineering"
+        ])
 
-        result = response.text.strip()
+        # Remove duplicates while preserving order
+        preprocessing_steps = list(dict.fromkeys(preprocessing_steps))
 
-        # Ensure result is a string
-        if not isinstance(result, str):
-            result = str(result)
+        # Limit to maximum 6 steps to avoid overwhelming the user
+        preprocessing_steps = preprocessing_steps[:6]
 
-        return result
+        snippets = {}
+
+        for step in preprocessing_steps:
+            if step == "missing_value_numeric":
+                prompt = f"""
+                Generate a Python code snippet for handling missing values in NUMERIC columns.
+                Dataset has columns: {columns}
+                Numeric columns: {numeric_cols}
+                Sample data types: {dtypes}
+
+                Create code that:
+                1. Creates sample dataframe with missing values in numeric columns
+                2. Shows different strategies: mean/median imputation, forward/backward fill
+                3. Compares results before and after
+                4. Uses pandas and numpy only
+                """
+
+            elif step == "missing_value_categorical":
+                prompt = f"""
+                Generate a Python code snippet for handling missing values in CATEGORICAL columns.
+                Dataset has columns: {columns}
+                Categorical columns: {categorical_cols}
+                Sample data types: {dtypes}
+
+                Create code that:
+                1. Creates sample dataframe with missing values in categorical columns
+                2. Shows different strategies: mode imputation, creating 'Unknown' category
+                3. Compares results before and after
+                4. Uses pandas only
+                """
+
+            elif step == "categorical_encoding":
+                prompt = f"""
+                Generate a Python code snippet for encoding categorical variables.
+                Dataset has columns: {columns}
+                Categorical columns: {categorical_cols}
+                Sample data types: {dtypes}
+
+                Create code that:
+                1. Creates sample dataframe with categorical data
+                2. Shows different encoding methods: Label Encoding, One-Hot Encoding, Target Encoding
+                3. Explains when to use each method
+                4. Uses pandas and sklearn
+                """
+
+            elif step == "numeric_scaling":
+                prompt = f"""
+                Generate a Python code snippet for scaling numeric features.
+                Dataset has columns: {columns}
+                Numeric columns: {numeric_cols}
+                Sample data types: {dtypes}
+
+                Create code that:
+                1. Creates sample dataframe with numeric data
+                2. Shows different scaling methods: StandardScaler, MinMaxScaler, RobustScaler
+                3. Explains when to use each method
+                4. Uses sklearn preprocessing
+                """
+
+            elif step == "outlier_detection":
+                prompt = f"""
+                Generate a Python code snippet for outlier detection and handling.
+                Dataset has columns: {columns}
+                Numeric columns: {numeric_cols}
+                Sample data types: {dtypes}
+
+                Create code that:
+                1. Creates sample dataframe with outliers
+                2. Shows different methods: IQR method, Z-score method, Isolation Forest
+                3. Compares results before and after outlier removal
+                4. Uses pandas, numpy, and scipy
+                """
+
+            elif step == "data_cleaning":
+                prompt = f"""
+                Generate a Python code snippet for general data cleaning operations.
+                Dataset has columns: {columns}
+                Sample data types: {dtypes}
+
+                Create code that:
+                1. Creates sample dataframe with common data quality issues
+                2. Shows cleaning steps: removing duplicates, fixing data types, handling whitespace
+                3. Validates results after cleaning
+                4. Uses pandas only
+                """
+
+            elif step == "feature_engineering":
+                prompt = f"""
+                Generate a Python code snippet for feature engineering techniques.
+                Dataset has columns: {columns}
+                Sample data types: {dtypes}
+
+                Create code that:
+                1. Creates sample dataframe for feature engineering
+                2. Shows techniques: creating new features, binning, polynomial features, interactions
+                3. Explains the value of each engineered feature
+                4. Uses pandas and numpy
+                """
+
+            elif step == "comprehensive_missing_values":
+                prompt = f"""
+                Generate a comprehensive Python code snippet for handling missing values across all data types.
+                Dataset has columns: {columns}
+                Sample data types: {dtypes}
+
+                Create code that:
+                1. Creates sample dataframe with missing values in multiple columns
+                2. Shows a complete missing value handling pipeline
+                3. Includes visualization of missing value patterns
+                4. Uses pandas, numpy, and missingno
+                """
+
+            try:
+                response = model.generate_content(prompt)
+
+                # Ensure we get a proper response
+                if not hasattr(response, 'text') or not response.text:
+                    continue
+
+                result = response.text.strip()
+
+                # Ensure result is a string
+                if not isinstance(result, str):
+                    result = str(result)
+
+                snippets[step] = result
+
+            except Exception as e:
+                # If one step fails, continue with others
+                continue
+
+        # Ensure we have at least one snippet
+        if not snippets:
+            raise ValueError("Failed to generate any preprocessing code snippets")
+
+        return snippets
+
     except Exception as e:
         raise ValueError(f"Error getting preprocessing code from Gemini API: {str(e)}")
 
@@ -394,7 +533,7 @@ def step4_visualization():
 
 @app.route('/step5', methods=['POST'])
 def step5_preprocessing():
-    """Generate preprocessing code snippets (Step 5)"""
+    """Generate multiple preprocessing code snippets (Step 5)"""
     try:
         # Validate session
         if 'data_info' not in session:
@@ -403,17 +542,30 @@ def step5_preprocessing():
 
         data_info = session['data_info']
 
-        # Get preprocessing code from Gemini
-        raw_code = get_preprocessing_code_from_gemini(data_info)
-        cleaned_code = clean_matplotlib_code(raw_code)  # Reuse existing cleaning function
+        # Get multiple preprocessing code snippets from Gemini
+        raw_snippets = get_preprocessing_code_from_gemini(data_info)
 
-        # Store code in session
-        session['preprocessing_code'] = cleaned_code
+        # Clean each snippet
+        cleaned_snippets = {}
+        for step_name, raw_code in raw_snippets.items():
+            try:
+                cleaned_code = clean_matplotlib_code(raw_code)
+                cleaned_snippets[step_name] = cleaned_code
+            except Exception as e:
+                # If cleaning fails for one snippet, skip it
+                continue
+
+        # Ensure we have at least one cleaned snippet
+        if not cleaned_snippets:
+            raise ValueError("Failed to generate any valid preprocessing code snippets")
+
+        # Store snippets in session
+        session['preprocessing_snippets'] = cleaned_snippets
 
         # Return preprocessing code view
         return render_template('step5_preprocessing.html',
                              data_info=data_info,
-                             code=cleaned_code)
+                             snippets=cleaned_snippets)
     except Exception as e:
         flash(f'Error generating preprocessing code: {str(e)}')
         return redirect(url_for('index'))
