@@ -393,7 +393,7 @@ pip install -e .
 
 - **Issues**: [GitHub Issues](https://github.com/yourusername/DataVisualizer/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/yourusername/DataVisualizer/discussions)
-- **Email**: support@datavisualizer.dev
+- **Email**: sumitkumarbittuair@gmail.com
 
 ---
 
